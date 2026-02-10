@@ -1,0 +1,3 @@
+Test suite cardano-block-decoder-test: RUNNING...
+Test suite cardano-block-decoder-test: PASS
+Test suite logged to: /home/carlos/github/cbor-block-decode/cardano-block-decoder/./dist-newstyle/build/x86_64-linux/ghc-9.6.7/cardano-block-decoder-0.1.0.0/t/cardano-block-decoder-test/test/cardano-block-decoder-0.1.0.0-cardano-block-decoder-test.log

@@ -1,0 +1,26 @@
+### Cardano Era 7 Block
+**Block Structure**
+#### Header Body
+- **Block Number**: 4043212
+- **Slot**: 83413505
+- **Prev Hash**:
+  `e60aa1eb682ac55653605fc98d84caaf3b1dc498e01362b3459458d6fee68812`
+- **Issuer VKey**:
+  `703561fe56f882433613ccc31724d17b2691e2c97e19f7ee206412caaff02b03`
+- **VRF VKey**:
+  `09d24bd6ea8a34484deaf16027dba191dc3105b7f97feee2110e66e77bffc1b7`
+- **VRF Certificate** (Output, Proof):
+  - Output: `86762c39a0fca0901effb472578cc0ece82946a2b94c7ce202443eae38907a91e7a7908b344f09558bc41114ab87f805653fd93d2638642e9e7739417044a3b5`
+  - Proof:  `6f80f1318c4ca297314bf68231686e46d368542dec6b103c92f64050796f90d1d45fe41f6448d409b0ee69d4bcc54b04203719655e04e07df0f2094e0c1093d931ef4ea3c3468557f5b6538b00e20905`
+- **Block Body Hash**:
+  `29571d16f081709b3c48651860077bebf9340abb3fc7133443c54f1f5a5edcf1`
+- **Body Size**: 4 bytes
+- **Operational Cert**:
+  - Hot VKey: `509c49647fff388630f14c28fce1b26f19663e168d9e8b03de340ab2f9aeeec2`
+  - Seq Number: 3
+  - KES Period: 631
+  - Sigma: `73b475b466cbcec07d2de32b6ab0470977edf48e0b0868d41c3ed26cbdefa7e945fda9a3bdb01d90ddbadf4b1ec13dee9976e7de4a4d2baead707a787ca03b07`
+
+- **Protocol Version**: 10.7
+
+

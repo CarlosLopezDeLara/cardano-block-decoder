@@ -1,0 +1,8 @@
+cradle:
+  cabal:
+    - path: "src"
+      component: "lib:cardano-block-decoder"
+    - path: "app"
+      component: "exe:cardano-block-decoder"
+    - path: "test"
+      component: "test:cardano-block-decoder-test"
