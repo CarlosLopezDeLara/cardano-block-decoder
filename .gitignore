@@ -5,6 +5,3 @@
   *.dyn_hi
   *.dyn_o
 
-  # Python
-  __pycache__/
-  *.pyc
