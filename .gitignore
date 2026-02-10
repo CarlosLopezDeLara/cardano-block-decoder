@@ -1,5 +1,5 @@
   # Cabal/GHC
-  cardano-block-decoder/dist-newstyle/
+ dist-newstyle/
   *.hi
   *.o
   *.dyn_hi
