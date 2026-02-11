@@ -17,31 +17,31 @@ import Data.List (intercalate)
 prettyBlock :: Block -> String
 prettyBlock Block{..} =
   unlines $
-    [ "### Cardano Era 7 Block"
-    , "**Block Structure**"
-    , "#### Header Body"
+    [ "Cardano Era 7 Block"
+    , ""
+    , "Header Body"
     , prettyHeaderBody (hHeaderBody bHeader)
     ]
-    ++ concatMap (\(i, tb) -> ["", prettyTransaction i tb]) (zip [0..] bTransactionBodies)
-    ++ concatMap (\(i, ws) -> ["", prettyWitnessSet i ws]) (zip [0..] bTransactionWitnessSets)
-    ++ concatMap (\entry -> ["", prettyAuxData entry]) (Map.toList bAuxiliaryDataSet)
+    ++ map (\(i, tb) -> prettyTransaction i tb) (zip [0..] bTransactionBodies)
+    ++ map (\(i, ws) -> prettyWitnessSet i ws) (zip [0..] bTransactionWitnessSets)
+    ++ map (\entry -> prettyAuxData entry) (Map.toList bAuxiliaryDataSet)
 
 prettyHeaderBody :: HeaderBody -> String
 prettyHeaderBody HeaderBody{..} =
   unlines
-    [ "- **Block Number**: " ++ show hbBlockNumber
-    , "- **Slot**: " ++ show hbSlot
-    , "- **Prev Hash**:\n  `" ++ maybe "None" prettyHash32 hbPrevHash ++ "`"
-    , "- **Issuer VKey**:\n  `" ++ prettyVKey hbIssuerVKey ++ "`"
-    , "- **VRF VKey**:\n  `" ++ prettyVrfVKey hbVrfVKey ++ "`"
-    , "- **VRF Certificate** (Output, Proof):"
-    , "  - Output: `" ++ prettyVrfCertOutput hbVrfResult ++ "`"
-    , "  - Proof:  `" ++ prettyVrfCertProof hbVrfResult ++ "`"
-    , "- **Block Body Hash**:\n  `" ++ prettyHash32 hbBlockBodyHash ++ "`"
-    , "- **Body Size**: " ++ show hbBlockBodySize ++ " bytes"
-    , "- **Operational Cert**:"
+    [ "  Block Number:   " ++ show hbBlockNumber
+    , "  Slot:           " ++ show hbSlot
+    , "  Prev Hash:      " ++ maybe "None" prettyHash32 hbPrevHash
+    , "  Issuer VKey:    " ++ prettyVKey hbIssuerVKey
+    , "  VRF VKey:       " ++ prettyVrfVKey hbVrfVKey
+    , "  VRF Certificate:"
+    , "    Output: " ++ prettyVrfCertOutput hbVrfResult
+    , "    Proof:  " ++ prettyVrfCertProof hbVrfResult
+    , "  Block Body Hash: " ++ prettyHash32 hbBlockBodyHash
+    , "  Body Size:      " ++ show hbBlockBodySize ++ " bytes"
+    , "  Operational Cert:"
     , prettyOperationalCert hbOperationalCert
-    , "- **Protocol Version**: " ++ show (pvMajor hbProtocolVersion) ++ "." ++ show (pvMinor hbProtocolVersion)
+    , "  Protocol Version: " ++ show (pvMajor hbProtocolVersion) ++ "." ++ show (pvMinor hbProtocolVersion)
     ]
 
 prettyHash32 :: Hash32 -> String
@@ -64,11 +64,11 @@ prettyVrfCertProof (VrfCert _ proof) = BS.Char8.unpack $ Base16.encode proof
 
 prettyOperationalCert :: OperationalCert -> String
 prettyOperationalCert OperationalCert{..} =
-  unlines
-    [ "  - Hot VKey: `" ++ prettyVKey opCertHotVKey ++ "`"
-    , "  - Seq Number: " ++ show opCertSeqNum
-    , "  - KES Period: " ++ show opCertKesPeriod
-    , "  - Sigma: `" ++ prettyBS opCertSigma ++ "`"
+  intercalate "\n"
+    [ "    Hot VKey:    " ++ prettyVKey opCertHotVKey
+    , "    Seq Number:  " ++ show opCertSeqNum
+    , "    KES Period:  " ++ show opCertKesPeriod
+    , "    Sigma:       " ++ prettyBS opCertSigma
     ]
 
 prettyBS :: BS.ByteString -> String
@@ -102,47 +102,47 @@ prettyAddress addr
 prettyTransaction :: Int -> TransactionBody -> String
 prettyTransaction idx tb =
   unlines $
-    [ "#### Transaction " ++ show idx
-    , "- **Inputs**: " ++ show (length (tbInputs tb))
+    [ "Transaction " ++ show idx
+    , "  Inputs: " ++ show (length (tbInputs tb))
     ]
-    ++ map (\inp -> "  - `" ++ prettyTxInput inp ++ "`") (tbInputs tb)
+    ++ map (\inp -> "    " ++ prettyTxInput inp) (tbInputs tb)
     ++
-    [ "- **Outputs**: " ++ show (length (tbOutputs tb))
+    [ "  Outputs: " ++ show (length (tbOutputs tb))
     ]
     ++ concatMap (\(i, out) -> prettyTxOutput i out) (zip [0..] (tbOutputs tb))
     ++
-    [ "- **Fee**: " ++ show (tbFee tb) ++ " lovelace"
+    [ "  Fee: " ++ show (tbFee tb) ++ " lovelace"
     ]
-    ++ maybe [] (\ttl -> ["- **TTL**: " ++ show ttl]) (tbTtl tb)
+    ++ maybe [] (\ttl -> ["  TTL: " ++ show ttl]) (tbTtl tb)
     ++ (if null (tbCertificates tb) then []
-        else ("- **Certificates**: " ++ show (length (tbCertificates tb)))
-             : map (\c -> "  - " ++ prettyCertificate c) (tbCertificates tb))
+        else ("  Certificates: " ++ show (length (tbCertificates tb)))
+             : map (\c -> "    " ++ prettyCertificate c) (tbCertificates tb))
     ++ (if Map.null (tbWithdrawals tb) then []
-        else ["- **Withdrawals**: " ++ show (Map.size (tbWithdrawals tb))]
-             ++ map (\(addr, coin) -> "  - `" ++ prettyAddress addr ++ "`: " ++ show coin ++ " lovelace")
+        else ["  Withdrawals: " ++ show (Map.size (tbWithdrawals tb))]
+             ++ map (\(addr, coin) -> "    " ++ prettyAddress addr ++ ": " ++ show coin ++ " lovelace")
                     (Map.toList (tbWithdrawals tb)))
-    ++ maybe [] (\h -> ["- **Auxiliary Data Hash**: `" ++ prettyHash32 h ++ "`"]) (tbAuxiliaryDataHash tb)
-    ++ maybe [] (\s -> ["- **Validity Start**: " ++ show s]) (tbValidityStart tb)
+    ++ maybe [] (\h -> ["  Auxiliary Data Hash: " ++ prettyHash32 h]) (tbAuxiliaryDataHash tb)
+    ++ maybe [] (\s -> ["  Validity Start: " ++ show s]) (tbValidityStart tb)
     ++ (if Map.null (tbMint tb) then []
-        else ["- **Mint**:"] ++ prettyMultiAsset (tbMint tb))
-    ++ maybe [] (\h -> ["- **Script Data Hash**: `" ++ prettyHash32 h ++ "`"]) (tbScriptDataHash tb)
+        else ["  Mint:"] ++ prettyMultiAsset (tbMint tb))
+    ++ maybe [] (\h -> ["  Script Data Hash: " ++ prettyHash32 h]) (tbScriptDataHash tb)
     ++ (if null (tbCollateral tb) then []
-        else ("- **Collateral**: " ++ show (length (tbCollateral tb)))
-             : map (\inp -> "  - `" ++ prettyTxInput inp ++ "`") (tbCollateral tb))
+        else ("  Collateral: " ++ show (length (tbCollateral tb)))
+             : map (\inp -> "    " ++ prettyTxInput inp) (tbCollateral tb))
     ++ (if null (tbRequiredSigners tb) then []
-        else ("- **Required Signers**: " ++ show (length (tbRequiredSigners tb)))
-             : map (\h -> "  - `" ++ prettyHash28 h ++ "`") (tbRequiredSigners tb))
-    ++ maybe [] (\nid -> ["- **Network ID**: " ++ show nid]) (tbNetworkId tb)
-    ++ maybe [] (\out -> "- **Collateral Return**:" : prettyTxOutput 0 out) (tbCollateralReturn tb)
-    ++ maybe [] (\c -> ["- **Total Collateral**: " ++ show c ++ " lovelace"]) (tbTotalCollateral tb)
+        else ("  Required Signers: " ++ show (length (tbRequiredSigners tb)))
+             : map (\h -> "    " ++ prettyHash28 h) (tbRequiredSigners tb))
+    ++ maybe [] (\nid -> ["  Network ID: " ++ show nid]) (tbNetworkId tb)
+    ++ maybe [] (\out -> "  Collateral Return:" : prettyTxOutput 0 out) (tbCollateralReturn tb)
+    ++ maybe [] (\c -> ["  Total Collateral: " ++ show c ++ " lovelace"]) (tbTotalCollateral tb)
     ++ (if null (tbReferenceInputs tb) then []
-        else ("- **Reference Inputs**: " ++ show (length (tbReferenceInputs tb)))
-             : map (\inp -> "  - `" ++ prettyTxInput inp ++ "`") (tbReferenceInputs tb))
-    ++ maybe [] (\_ -> ["- **Voting Procedures**: Present"]) (tbVotingProcedures tb)
+        else ("  Reference Inputs: " ++ show (length (tbReferenceInputs tb)))
+             : map (\inp -> "    " ++ prettyTxInput inp) (tbReferenceInputs tb))
+    ++ maybe [] (\_ -> ["  Voting Procedures: Present"]) (tbVotingProcedures tb)
     ++ (if null (tbProposalProcedures tb) then []
-        else ["- **Proposal Procedures**: " ++ show (length (tbProposalProcedures tb))])
-    ++ maybe [] (\t -> ["- **Treasury Value**: " ++ show t ++ " lovelace"]) (tbTreasuryValue tb)
-    ++ maybe [] (\d -> ["- **Donation**: " ++ show d ++ " lovelace"]) (tbDonation tb)
+        else ["  Proposal Procedures: " ++ show (length (tbProposalProcedures tb))])
+    ++ maybe [] (\t -> ["  Treasury Value: " ++ show t ++ " lovelace"]) (tbTreasuryValue tb)
+    ++ maybe [] (\d -> ["  Donation: " ++ show d ++ " lovelace"]) (tbDonation tb)
 
 prettyTxInput :: TransactionInput -> String
 prettyTxInput TransactionInput{..} =
@@ -150,13 +150,13 @@ prettyTxInput TransactionInput{..} =
 
 prettyTxOutput :: Int -> TransactionOutput -> [String]
 prettyTxOutput idx TransactionOutput{..} =
-  [ "  - **Output " ++ show idx ++ "**:"
-  , "    - Address: `" ++ prettyAddress txOutAddress ++ "`"
-  , "    - Value: " ++ prettyValue txOutValue
+  [ "    Output " ++ show idx ++ ":"
+  , "      Address: " ++ prettyAddress txOutAddress
+  , "      Value:   " ++ prettyValue txOutValue
   ]
-  ++ maybe [] (\h -> ["    - Datum Hash: `" ++ prettyHash32 h ++ "`"]) txOutDatumHash
-  ++ maybe [] (\d -> ["    - Datum: " ++ prettyDatumOption d]) txOutDatum
-  ++ maybe [] (\s -> ["    - Script Ref: `" ++ prettyBS s ++ "`"]) txOutScriptRef
+  ++ maybe [] (\h -> ["      Datum Hash: " ++ prettyHash32 h]) txOutDatumHash
+  ++ maybe [] (\d -> ["      Datum: " ++ prettyDatumOption d]) txOutDatum
+  ++ maybe [] (\s -> ["      Script Ref: " ++ prettyBS s]) txOutScriptRef
 
 prettyValue :: Value -> String
 prettyValue (ValueLovelace coin) = show coin ++ " lovelace"
@@ -171,14 +171,14 @@ prettyValue (ValueMultiAsset coin assets) =
         (Map.toList assetMap)
 
 prettyDatumOption :: DatumOption -> String
-prettyDatumOption (DatumHash h) = "Hash `" ++ prettyHash32 h ++ "`"
+prettyDatumOption (DatumHash h) = "Hash " ++ prettyHash32 h
 prettyDatumOption (DatumInline bs) = "Inline (" ++ show (BS.length bs) ++ " bytes)"
 
 prettyMultiAsset :: Map.Map PolicyId (Map.Map AssetName Integer) -> [String]
 prettyMultiAsset assets =
   concatMap (\(pid, assetMap) ->
     map (\(name, amt) ->
-      "  - " ++ show amt ++ " `" ++ prettyHash28 pid ++ "`.`" ++ prettyBS name ++ "`")
+      "    " ++ show amt ++ " " ++ prettyHash28 pid ++ "." ++ prettyBS name)
       (Map.toList assetMap))
     (Map.toList assets)
 
@@ -193,11 +193,11 @@ prettyCertificate cert = case cert of
   CertAccountUnregistration cred ->
     "Account Unregistration: " ++ prettyCredential cred
   CertDelegationToStakePool cred pool ->
-    "Delegation to Pool: " ++ prettyCredential cred ++ " -> `" ++ prettyHash28 pool ++ "`"
+    "Delegation to Pool: " ++ prettyCredential cred ++ " -> " ++ prettyHash28 pool
   CertPoolRegistration pp ->
-    "Pool Registration: operator=`" ++ prettyHash28 (ppOperator pp) ++ "`"
+    "Pool Registration: operator=" ++ prettyHash28 (ppOperator pp)
   CertPoolRetirement pool epoch ->
-    "Pool Retirement: `" ++ prettyHash28 pool ++ "` at epoch " ++ show epoch
+    "Pool Retirement: " ++ prettyHash28 pool ++ " at epoch " ++ show epoch
   CertAccountRegistrationDeposit cred deposit ->
     "Account Registration (deposit " ++ show deposit ++ "): " ++ prettyCredential cred
   CertAccountUnregistrationDeposit cred deposit ->
@@ -206,16 +206,16 @@ prettyCertificate cert = case cert of
     "Delegation to DRep: " ++ prettyCredential cred ++ " -> " ++ prettyDRep drep
   CertDelegationToStakePoolAndDRep cred pool drep ->
     "Delegation to Pool+DRep: " ++ prettyCredential cred
-    ++ " -> pool=`" ++ prettyHash28 pool ++ "`, drep=" ++ prettyDRep drep
+    ++ " -> pool=" ++ prettyHash28 pool ++ ", drep=" ++ prettyDRep drep
   CertAccountRegDelegStakePool cred pool deposit ->
     "Reg+Delegate to Pool (deposit " ++ show deposit ++ "): "
-    ++ prettyCredential cred ++ " -> `" ++ prettyHash28 pool ++ "`"
+    ++ prettyCredential cred ++ " -> " ++ prettyHash28 pool
   CertAccountRegDelegDRep cred drep deposit ->
     "Reg+Delegate to DRep (deposit " ++ show deposit ++ "): "
     ++ prettyCredential cred ++ " -> " ++ prettyDRep drep
   CertAccountRegDelegStakePoolAndDRep cred pool drep deposit ->
     "Reg+Delegate to Pool+DRep (deposit " ++ show deposit ++ "): "
-    ++ prettyCredential cred ++ " -> pool=`" ++ prettyHash28 pool ++ "`, drep=" ++ prettyDRep drep
+    ++ prettyCredential cred ++ " -> pool=" ++ prettyHash28 pool ++ ", drep=" ++ prettyDRep drep
   CertCommitteeAuth cold hot ->
     "Committee Auth: cold=" ++ prettyCredential cold ++ " hot=" ++ prettyCredential hot
   CertCommitteeResignation cold anchor ->
@@ -231,17 +231,17 @@ prettyCertificate cert = case cert of
     ++ maybe "" (\a -> " anchor=" ++ prettyAnchor a) anchor
 
 prettyCredential :: Credential -> String
-prettyCredential (CredKeyHash h) = "KeyHash `" ++ prettyHash28 h ++ "`"
-prettyCredential (CredScriptHash h) = "ScriptHash `" ++ prettyHash28 h ++ "`"
+prettyCredential (CredKeyHash h) = "KeyHash " ++ prettyHash28 h
+prettyCredential (CredScriptHash h) = "ScriptHash " ++ prettyHash28 h
 
 prettyDRep :: DRep -> String
-prettyDRep (DRepKeyHash h) = "KeyHash `" ++ prettyHash28 h ++ "`"
-prettyDRep (DRepScriptHash h) = "ScriptHash `" ++ prettyHash28 h ++ "`"
+prettyDRep (DRepKeyHash h) = "KeyHash " ++ prettyHash28 h
+prettyDRep (DRepScriptHash h) = "ScriptHash " ++ prettyHash28 h
 prettyDRep DRepAlwaysAbstain = "AlwaysAbstain"
 prettyDRep DRepAlwaysNoConfidence = "AlwaysNoConfidence"
 
 prettyAnchor :: Anchor -> String
-prettyAnchor Anchor{..} = T.unpack anchorUrl ++ " (`" ++ prettyHash32 anchorDataHash ++ "`)"
+prettyAnchor Anchor{..} = T.unpack anchorUrl ++ " (" ++ prettyHash32 anchorDataHash ++ ")"
 
 --------------------------------------------------------------------------------
 -- Witness set pretty printing
@@ -250,30 +250,30 @@ prettyAnchor Anchor{..} = T.unpack anchorUrl ++ " (`" ++ prettyHash32 anchorData
 prettyWitnessSet :: Int -> TransactionWitnessSet -> String
 prettyWitnessSet idx TransactionWitnessSet{..} =
   unlines $
-    [ "#### Witness Set " ++ show idx
+    [ "Witness Set " ++ show idx
     ]
     ++ (if null twsVKeyWitnesses then []
-        else ("- **VKey Witnesses**: " ++ show (length twsVKeyWitnesses))
+        else ("  VKey Witnesses: " ++ show (length twsVKeyWitnesses))
              : map prettyVKeyWitness twsVKeyWitnesses)
     ++ (if null twsNativeScripts then []
-        else ["- **Native Scripts**: " ++ show (length twsNativeScripts)])
+        else ["  Native Scripts: " ++ show (length twsNativeScripts)])
     ++ (if null twsBootstrapWitnesses then []
-        else ["- **Bootstrap Witnesses**: " ++ show (length twsBootstrapWitnesses)])
+        else ["  Bootstrap Witnesses: " ++ show (length twsBootstrapWitnesses)])
     ++ (if null twsPlutusV1Scripts then []
-        else ["- **Plutus V1 Scripts**: " ++ show (length twsPlutusV1Scripts)])
+        else ["  Plutus V1 Scripts: " ++ show (length twsPlutusV1Scripts)])
     ++ (if null twsPlutusData then []
-        else ["- **Plutus Data**: " ++ show (length twsPlutusData)])
+        else ["  Plutus Data: " ++ show (length twsPlutusData)])
     ++ (if null twsRedeemers then []
-        else ["- **Redeemers**: " ++ show (length twsRedeemers)])
+        else ["  Redeemers: " ++ show (length twsRedeemers)])
     ++ (if null twsPlutusV2Scripts then []
-        else ["- **Plutus V2 Scripts**: " ++ show (length twsPlutusV2Scripts)])
+        else ["  Plutus V2 Scripts: " ++ show (length twsPlutusV2Scripts)])
     ++ (if null twsPlutusV3Scripts then []
-        else ["- **Plutus V3 Scripts**: " ++ show (length twsPlutusV3Scripts)])
+        else ["  Plutus V3 Scripts: " ++ show (length twsPlutusV3Scripts)])
 
 prettyVKeyWitness :: VKeyWitness -> String
 prettyVKeyWitness VKeyWitness{..} =
-  "  - VKey: `" ++ prettyVKey vkwVKey ++ "`\n"
-  ++ "    Sig:  `" ++ prettyBS vkwSignature ++ "`"
+  "    VKey: " ++ prettyVKey vkwVKey ++ "\n"
+  ++ "    Sig:  " ++ prettyBS vkwSignature
 
 --------------------------------------------------------------------------------
 -- Auxiliary data pretty printing
@@ -282,24 +282,24 @@ prettyVKeyWitness VKeyWitness{..} =
 prettyAuxData :: (TransactionIndex, AuxiliaryData) -> String
 prettyAuxData (idx, auxData) =
   unlines $
-    [ "#### Auxiliary Data (Tx " ++ show idx ++ ")"
+    [ "Auxiliary Data (Tx " ++ show idx ++ ")"
     ] ++ case auxData of
       AuxMetadata meta ->
-        ["- **Metadata**: " ++ show (Map.size meta) ++ " entries"]
-        ++ map (\(k, v) -> "  - " ++ show k ++ ": " ++ prettyMetadatum v) (Map.toList meta)
+        ["  Metadata: " ++ show (Map.size meta) ++ " entries"]
+        ++ map (\(k, v) -> "    " ++ show k ++ ": " ++ prettyMetadatum v) (Map.toList meta)
       AuxArray meta scripts ->
-        ["- **Metadata**: " ++ show (Map.size meta) ++ " entries"]
-        ++ ["- **Native Scripts**: " ++ show (length scripts)]
+        ["  Metadata: " ++ show (Map.size meta) ++ " entries"]
+        ++ ["  Native Scripts: " ++ show (length scripts)]
       AuxMap{..} ->
-        maybe [] (\m -> ["- **Metadata**: " ++ show (Map.size m) ++ " entries"]) auxMetadata
-        ++ (if null auxNativeScripts then [] else ["- **Native Scripts**: " ++ show (length auxNativeScripts)])
-        ++ (if null auxPlutusV1 then [] else ["- **Plutus V1 Scripts**: " ++ show (length auxPlutusV1)])
-        ++ (if null auxPlutusV2 then [] else ["- **Plutus V2 Scripts**: " ++ show (length auxPlutusV2)])
-        ++ (if null auxPlutusV3 then [] else ["- **Plutus V3 Scripts**: " ++ show (length auxPlutusV3)])
+        maybe [] (\m -> ["  Metadata: " ++ show (Map.size m) ++ " entries"]) auxMetadata
+        ++ (if null auxNativeScripts then [] else ["  Native Scripts: " ++ show (length auxNativeScripts)])
+        ++ (if null auxPlutusV1 then [] else ["  Plutus V1 Scripts: " ++ show (length auxPlutusV1)])
+        ++ (if null auxPlutusV2 then [] else ["  Plutus V2 Scripts: " ++ show (length auxPlutusV2)])
+        ++ (if null auxPlutusV3 then [] else ["  Plutus V3 Scripts: " ++ show (length auxPlutusV3)])
 
 prettyMetadatum :: Metadatum -> String
 prettyMetadatum (MetadatumInt i)    = show i
-prettyMetadatum (MetadatumBytes bs) = "`" ++ prettyBS bs ++ "`"
+prettyMetadatum (MetadatumBytes bs) = prettyBS bs
 prettyMetadatum (MetadatumText t)   = "\"" ++ T.unpack t ++ "\""
 prettyMetadatum (MetadatumList xs)  = "[" ++ intercalate ", " (map prettyMetadatum xs) ++ "]"
 prettyMetadatum (MetadatumMap kvs)  = "{" ++ intercalate ", " (map (\(k,v) -> prettyMetadatum k ++ ": " ++ prettyMetadatum v) kvs) ++ "}"
